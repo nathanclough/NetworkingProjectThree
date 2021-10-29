@@ -11,6 +11,7 @@ extern int TRACE;
 extern int YES;
 extern int NO;
 
+int neighbors2 [3] = {0,1,3};
 struct distance_table 
 {
   int costs[4][4];
@@ -21,6 +22,30 @@ struct distance_table
 
 void rtinit2() 
 {
+  // Initialize to infinity
+  for(int i = 0; i<4; i++){
+    for( int j = 0; j< 4; j++){
+        dt2.costs[i][j] = 999;
+      }
+  }
+
+  // Set known neighbors 
+  dt2.costs[0][0] = 3;
+  dt2.costs[1][1] = 1;
+  dt2.costs[2][2] = 0;
+  dt2.costs[3][3] = 2;
+
+  printdt2(&dt2);
+
+  // Update neighbors with the initial state 
+  int minCost[4] = {999,999,999,999};
+  getMinCost(minCost,dt2.costs);
+  for(int i = 0; i<sizeof(neighbors2)/sizeof(neighbors2[1]); i++)
+      {
+        printf("Updating node %d\n",i);
+        sendUpdate(neighbors2[i],minCost,2);
+      } 
+
 }
 
 
@@ -28,7 +53,32 @@ void rtupdate2(rcvdpkt)
   struct rtpkt *rcvdpkt;
   
 {
+  int update = 0;
+  int currentMinCosts [4] = {999,999,999,999};
+  int src = rcvdpkt->sourceid;
+  getMinCost(currentMinCosts,dt2.costs);
 
+  for(int i = 0; i<4; i++){
+    // Update costs based on recieved packet 
+    dt2.costs[i][src] = rcvdpkt->mincost[i] + currentMinCosts[src];
+    
+    // Check if after the update we have a new minimum
+    if( dt2.costs[i][src] < currentMinCosts[i]){
+      update = 1;
+      currentMinCosts[i] = dt2.costs[i][src];
+    }
+  }
+
+  printdt1(&dt2);
+  
+  // Update if there was a new shortest path 
+  if(update){
+    for(int i = 0; i<sizeof(neighbors2)/sizeof(neighbors2[1]); i++)
+      {
+        printf("Updating node %d\n",i);
+        sendUpdate(neighbors2[i],currentMinCosts,2);
+      }
+  }  
 }
 
 

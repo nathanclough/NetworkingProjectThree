@@ -38,6 +38,25 @@ int mincosts[];
     initrtpkt->mincost[i] = mincosts[i];
 }  
 
+void getMinCost(int * minCost, int (*costs)[4]){
+  for(int dest = 0; dest < 4; dest++){
+    for(int via = 0; via < 4; via ++){
+      int cost = costs[dest][via];
+      if( cost < minCost[dest]){
+        minCost[dest] = cost;
+      }
+    }
+  }
+}
+
+void sendUpdate(int destId, int * minCost, int src){
+  struct rtpkt pkt;
+  pkt.destid = destId;
+  pkt.sourceid = src;
+  memcpy(pkt.mincost,minCost,sizeof(int)*4);
+  tolayer2(pkt);
+}
+
 
 /*****************************************************************
 ***************** NETWORK EMULATION CODE STARTS BELOW ***********

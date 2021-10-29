@@ -13,31 +13,75 @@ extern int YES;
 extern int NO;
 
 int connectcosts1[4] = { 1,  0,  1, 999 };
+int neighbors[2] = {0,2};
 
 struct distance_table 
 {
   int costs[4][4];
 } dt1;
 
-
 /* students to write the following two routines, and maybe some others */
 
 
 rtinit1() 
 {
+  // Initialize all costs to inf
+  for(int i = 0; i<4; i++){
+    for( int j = 0; j< 4; j++){
+        dt1.costs[i][j] = 999;
+      }
+    }
 
+  // Add initial costs 
+  dt1.costs[0][0] = 1;
+  dt1.costs[1][1] = 0;
+  dt1.costs[2][2] = 1;
+  dt1.costs[3][3] = 999;
+  printdt1(&dt1);
+  int minCost[4] = {999,999,999,999};
+  getMinCost(minCost,dt1.costs);
+
+  printf("Updating node 0\n");
+  sendUpdate(0,minCost,1);
+  printf("Updating node 2\n");
+  sendUpdate(2,minCost,1);
 }
-
 
 rtupdate1(rcvdpkt)
   struct rtpkt *rcvdpkt;
   
 {
+  // First update from 0 is [0,1,3,7]
+  int update = 0;
+  int currentMinCosts [4] = {999,999,999,999};
+  int src = rcvdpkt->sourceid;
+  getMinCost(currentMinCosts,dt1.costs);
+
+  for(int i = 0; i<4; i++){
+    // Update costs based on recieved packet 
+    dt1.costs[i][src] = rcvdpkt->mincost[i] + currentMinCosts[src];
+    
+    // Check if after the update we have a new minimum
+    if( dt1.costs[i][src] < currentMinCosts[i]){
+      update = 1;
+      currentMinCosts[i] = dt1.costs[i][src];
+    }
+  }
+
+  // for each node 
+  printdt1(&dt1);
+  if(update){
+    for(int i = 0; i<sizeof(neighbors)/sizeof(neighbors[1]); i++)
+      {
+        printf("Updating node %d\n",i);
+        sendUpdate(neighbors[i],currentMinCosts,1);
+      }
+  }
+
 
 }
 
-
-printdt1(dtptr)
+int printdt1(dtptr)
   struct distance_table *dtptr;
   
 {
