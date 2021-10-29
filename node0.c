@@ -66,6 +66,11 @@ void rtupdate0(rcvdpkt)
 
   // for each node 
   printdt0(&dt0);
+  printf("Current min costs (dest,cost): \n");
+  for(int i = 0; i< 4; i++){
+    printf("(%d,%d) \n",i, currentMinCosts[i]);
+  }
+
   if(update){
     for(int i = 1; i<4; i++)
       {

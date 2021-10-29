@@ -57,19 +57,26 @@ rtupdate1(rcvdpkt)
   int src = rcvdpkt->sourceid;
   getMinCost(currentMinCosts,dt1.costs);
 
-  for(int i = 0; i<4; i++){
+ for(int i = 0; i<4; i++){
     // Update costs based on recieved packet 
-    dt1.costs[i][src] = rcvdpkt->mincost[i] + currentMinCosts[src];
-    
-    // Check if after the update we have a new minimum
-    if( dt1.costs[i][src] < currentMinCosts[i]){
-      update = 1;
-      currentMinCosts[i] = dt1.costs[i][src];
+    int newCost = rcvdpkt->mincost[i] + currentMinCosts[src];
+    if(newCost < dt1.costs[i][src]){
+      dt1.costs[i][src] = newCost;
+        // Check if after the update we have a new minimum
+      if( dt1.costs[i][src] < currentMinCosts[i]){
+        update = 1;
+        currentMinCosts[i] = dt1.costs[i][src];
+      }
     }
   }
 
   // for each node 
   printdt1(&dt1);
+  printf("Current min costs (dest,cost): \n");
+  for(int i = 0; i< 4; i++){
+    printf("(%d,%d) \n",i, currentMinCosts[i]);
+  }
+
   if(update){
     for(int i = 0; i<sizeof(neighbors)/sizeof(neighbors[1]); i++)
       {

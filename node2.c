@@ -58,18 +58,25 @@ void rtupdate2(rcvdpkt)
   int src = rcvdpkt->sourceid;
   getMinCost(currentMinCosts,dt2.costs);
 
-  for(int i = 0; i<4; i++){
+ for(int i = 0; i<4; i++){
     // Update costs based on recieved packet 
-    dt2.costs[i][src] = rcvdpkt->mincost[i] + currentMinCosts[src];
-    
-    // Check if after the update we have a new minimum
-    if( dt2.costs[i][src] < currentMinCosts[i]){
-      update = 1;
-      currentMinCosts[i] = dt2.costs[i][src];
+    int newCost = rcvdpkt->mincost[i] + currentMinCosts[src];
+    if(newCost < dt2.costs[i][src]){
+      dt2.costs[i][src] = newCost;
+        // Check if after the update we have a new minimum
+      if( dt2.costs[i][src] < currentMinCosts[i]){
+        update = 1;
+        currentMinCosts[i] = dt2.costs[i][src];
+      }
     }
   }
 
-  printdt1(&dt2);
+  printdt2(&dt2);
+  printf("Current min costs (dest,cost): \n");
+  for(int i = 0; i< 4; i++){
+    printf("(%d,%d) \n",i, currentMinCosts[i]);
+  }
+
   
   // Update if there was a new shortest path 
   if(update){
